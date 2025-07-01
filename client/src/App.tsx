@@ -3,16 +3,20 @@ import Home from "./pages/Home";
 import ScrollProvider from "./components/ScrollProvider";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   return (
-    <ScrollProvider>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-      </Routes>
-    </ScrollProvider>
+    <div>
+      <Toaster />
+      <ScrollProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
+      </ScrollProvider>
+    </div>
   );
 };
 
