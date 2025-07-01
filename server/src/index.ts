@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import authRoutes from "./routes/auth.route.js";
 
 dotenv.config();
 
@@ -10,9 +11,17 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 app.use(morgan("dev"));
 app.use(express.json());
+
+// APIs
+app.use("/api/v1/auth", authRoutes);
 
 // Routes
 app.get("/", (_, res) => {
