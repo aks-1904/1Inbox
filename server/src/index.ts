@@ -4,6 +4,7 @@ import morgan from "morgan";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.route.js";
+import userRoutes from "./routes/user.route.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 
 // APIs
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/user", userRoutes);
 
 // Routes
 app.get("/", (_, res) => {

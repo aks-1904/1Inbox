@@ -1,19 +1,12 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { EmailAccountSchema, IEmailAccount } from "./email.model";
 
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string; // Hashed password by bcrypt
-  google?: {
-    conected: boolean;
-    accessToken?: string; // Token for Gmail API
-    refreshToken?: string; // to refresh expired token
-  };
-  microsoft?: {
-    connected: boolean;
-    accessToken?: string; // Token for Gmail API
-    refreshToken?: string; // to refresh expired token
-  };
+  google?: IEmailAccount[];
+  microsoft?: IEmailAccount[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,22 +26,8 @@ const UserSchema: Schema = new Schema<IUser>(
       type: String,
       required: true,
     },
-    google: {
-      connected: {
-        type: Boolean,
-        default: false,
-      },
-      accessToken: String,
-      refreshToken: String,
-    },
-    microsoft: {
-      connected: {
-        type: Boolean,
-        default: false,
-      },
-      accessToken: String,
-      refreshToken: String,
-    },
+    google: [EmailAccountSchema],
+    microsoft: [EmailAccountSchema],
   },
   { timestamps: true }
 );
