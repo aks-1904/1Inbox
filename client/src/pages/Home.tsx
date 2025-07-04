@@ -1,13 +1,14 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
+import { useAppSelector } from "../redux/store";
 
 const Home = () => {
-  const user = false;
+  const user = useAppSelector((state) => state.user.user);
 
   return (
     <>
-      <Navbar user={user} />
+      <Navbar user={user ? true : false} />
 
       {/* Hero Section */}
       <section
