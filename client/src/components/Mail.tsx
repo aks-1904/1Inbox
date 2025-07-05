@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { FaEnvelope } from "react-icons/fa";
-import type { Email } from "../pages/Inbox";
+import type { Email } from "../redux/slice/emailSlice";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -21,10 +21,10 @@ const Mail = (props: Props) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: props.index * 0.1 }}
         onClick={() => goToEmail(props.email.id)}
-        className="cursor-pointer shadow hover:shadow-lg transition rounded-xl p-4 border hover:border-blue-500 bg-gray-50 hover:bg-blue-50"
+        className="cursor-pointer shadow hover:shadow-lg transition rounded-xl p-4 border hover:border-primary bg-gray-50 hover:bg-blue-50"
       >
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold flex items-center gap-2 text-blue-700">
+          <h3 className="text-lg font-semibold flex items-center gap-2 text-secondary">
             <FaEnvelope /> {props.email.subject}
           </h3>
           <span className="text-xs text-gray-500">{props.email.date}</span>
