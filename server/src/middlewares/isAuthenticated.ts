@@ -31,7 +31,7 @@ const isAuthenticated = async (
     }
 
     const token = authHeader.split(" ")[1];
-    const secret = process.env.JET_SECRET;
+    const secret = process.env.JWT_SECRET;
 
     if (!secret) {
       throw new Error("JWT_SECRET not defined");

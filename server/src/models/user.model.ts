@@ -26,8 +26,8 @@ const UserSchema: Schema = new Schema<IUser>(
       type: String,
       required: true,
     },
-    google: [EmailAccountSchema],
-    microsoft: [EmailAccountSchema],
+    google: { type: [EmailAccountSchema], default: [] },
+    microsoft: { type: [EmailAccountSchema], default: [] },
   },
   { timestamps: true }
 );

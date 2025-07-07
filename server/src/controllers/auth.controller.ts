@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JET_SECRET!;
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export const signup = async (req: Request, res: Response): Promise<any> => {
   try {

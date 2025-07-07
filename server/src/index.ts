@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import gmailRoutes from "./routes/gmail.route.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(express.json());
 // APIs
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/gmail", gmailRoutes);
 
 // Routes
 app.get("/", (_, res) => {

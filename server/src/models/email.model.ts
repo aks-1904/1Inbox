@@ -1,6 +1,7 @@
-import mongoose, { Schema } from "mongoose";
+import { Schema } from "mongoose";
 
 export interface IEmailAccount {
+  provider: "google" | "microsoft";
   email: string;
   accessToken: string;
   refreshToken: string;
@@ -9,6 +10,11 @@ export interface IEmailAccount {
 
 export const EmailAccountSchema = new Schema<IEmailAccount>(
   {
+    provider: {
+      type: String,
+      enum: ["google", "microsoft"],
+      required: true,
+    },
     email: {
       type: String,
       required: true,
@@ -26,5 +32,5 @@ export const EmailAccountSchema = new Schema<IEmailAccount>(
       default: true,
     },
   },
-  { _id: false }
+  { _id: false, timestamps: true }
 );
