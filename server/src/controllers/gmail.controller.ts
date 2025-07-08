@@ -1,8 +1,9 @@
 import dotenv from "dotenv";
 import { Request, Response } from "express";
 import { google } from "googleapis";
-import User from "../models/user.model";
+import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import { getEmails } from "../services/gmailService";
 
 dotenv.config();
 
@@ -108,5 +109,54 @@ export const googleOAuthCallback = async (
   } catch (error) {
     console.error("OAuth callback error:", error);
     return res.redirect(`${process.env.FRONTEND_URL}/inbox?error=oauth_failed`);
+  }
+};
+
+export const getEmailsOfSingleAccount = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  const userId = req.id;
+  const { pageToken, email } = req.query;
+
+  if (!email) {
+    return res.status(404).json({
+      success: false,
+      message: "Please specify mail",
+    });
+  }
+
+  const user = await User.findById(userId);
+  const account = user?.google?.find((data) => data.email === email);
+
+  if (!account)
+    return res.status(404).json({
+      success: false,
+      message: "Email not found",
+    });
+
+  const maxResult = 10;
+
+  try {
+    const { emails, nextPageToken } = await getEmails(
+      account?.accessToken,
+      account?.refreshToken,
+      maxResult,
+      user!,
+      email as string,
+      pageToken as string | undefined
+    );
+
+    return res.status(200).json({
+      success: true,
+      emails,
+      nextPageToken,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Cannot get emails",
+    });
   }
 };
