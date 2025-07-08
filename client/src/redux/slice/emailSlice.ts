@@ -13,8 +13,6 @@ export interface Email {
 
 export interface IEmailAccount {
   email: string;
-  accessToken: string | null;
-  refreshToken: string | null;
   connected: boolean;
 }
 
