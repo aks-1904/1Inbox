@@ -85,15 +85,16 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       });
     }
 
-    // Removing password before sending to frontend
-    const userObj = user.toObject();
-    const { password, ...userWithoutPassword } = userObj;
+    // Removing password and tokens before sending to frontend
+    const userObj = await User.findOne({ email }).select(
+      "-password -google.accessToken -google.refreshToken -microsoft.accessToken -microsoft.refreshToken"
+    );
 
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" }); // token for 7 days
     return res.status(200).json({
       message: `Welcome back ${user.name}!`,
       success: true,
-      user: userWithoutPassword,
+      user: userObj,
       token,
     });
   } catch (error) {

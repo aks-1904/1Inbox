@@ -8,7 +8,9 @@ export const getUserProfile = async (
   try {
     const userId = req.id!;
 
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId).select(
+      "-password -google.accessToken -google.refreshToken -microsoft.accessToken -microsoft.refreshToken"
+    );
     if (!user) {
       return res.status(404).json({
         success: false,

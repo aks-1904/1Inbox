@@ -95,7 +95,6 @@ export const googleOAuthCallback = async (
     } else {
       // Push new account object
       user!.google!.push({
-        provider: "google",
         email: googleEmail,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
