@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
-import type { Email } from "../redux/slice/emailSlice";
 import Navbar from "../components/Navbar";
 import { useAppSelector } from "../redux/store";
 import Account from "../components/Account";
@@ -10,36 +9,12 @@ import { useConnectGmail } from "../hooks/useConnectGmail";
 import { useUser } from "../hooks/useUser";
 
 const Inbox = () => {
-  const [emails, setEmails] = useState<Email[]>([]);
   const [showSidebar, setShowSidebar] = useState(false); // For mobile sidebar
   const connectGmail = useConnectGmail();
 
   const { getProfileData } = useUser();
   useEffect(() => {
     getProfileData();
-  }, []);
-
-  useEffect(() => {
-    setEmails([
-      {
-        id: "1",
-        subject: "Welcome to 1Inbox!",
-        body: "Thanks for signing up. We’re excited to have you onboard.",
-        from: "support@1inbox.com",
-        to: "you@gmail.com",
-        accountEmail: "you@gmail.com",
-        date: "2025-07-04",
-      },
-      {
-        id: "2",
-        subject: "Meeting Reminder",
-        body: "You have a meeting scheduled tomorrow at 10 AM. Please join via the provided link.",
-        from: "calendar@outlook.com",
-        to: "you@outlook.com",
-        accountEmail: "you@outlook.com",
-        date: "2025-07-03",
-      },
-    ]);
   }, []);
 
   const user = useAppSelector((store) => store.user.user);
@@ -75,7 +50,9 @@ const Inbox = () => {
               <div className="space-y-4">
                 {googleAccounts &&
                   googleAccounts.map((acc, index) => (
-                    <Account key={index} data={acc} type="google" />
+                    <div className="h-full cursor-pointer w-full">
+                      <Account key={index} data={acc} type="google" />
+                    </div>
                   ))}
               </div>
             </div>

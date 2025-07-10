@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.get("/connect", connectGoogle);
 router.get("/oauth2callback", googleOAuthCallback); // Google redirects here
-router.get("/get-emails", isAuthenticated, getEmailsOfSingleAccount);
+router.get("/emails", isAuthenticated, getEmailsOfSingleAccount);
 
 export default router;
