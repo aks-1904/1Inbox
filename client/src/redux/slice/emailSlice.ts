@@ -1,13 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+export interface IEmailAccount {
+  email: string;
+  connected: boolean;
+}
+
 export interface Email {
   id: string;
   subject: string;
   snippet: string;
   from: string;
   to: string;
-  date: string;
+  date: number;
 }
 
 type Provider = "google" | "microsoft";
@@ -94,9 +99,19 @@ const emailSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
+
+    resetEmails() {
+      return initialState;
+    },
   },
 });
 
-export const { setEmails, addEmail, setNextPageToken, setLoading } =
-  emailSlice.actions;
+export const {
+  setEmails,
+  addEmail,
+  setNextPageToken,
+  setLoading,
+  resetEmails,
+} = emailSlice.actions;
+
 export default emailSlice.reducer;

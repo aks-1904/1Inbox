@@ -1,53 +1,65 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-type NavbarProps = {
+interface NavbarProps {
   user: boolean;
-};
+}
 
-const Navbar: React.FC<NavbarProps> = ({ user }) => {
+const Navbar = ({ user }: NavbarProps) => {
   const { logout } = useAuth();
+  
   return (
-    <nav className="flex justify-between items-center p-4 bg-transparent shadow w-full">
-      <div className="flex items-center justify-center">
-        <img src="./logo.png" alt="logo" width={50} height={50} />
-        <h1 className="text-2xl font-extrabold">1Inbox</h1>
+    <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#20364b] px-10 py-3">
+      <div className="flex items-center gap-4 text-white">
+        <div className="size-4">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor" />
+          </svg>
+        </div>
+        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+          1Inbox
+        </h2>
       </div>
-      <div className="space-x-4">
-        {user ? (
-          <div className="flex gap-5">
-            <Link
-              to="/inbox"
-              className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors duration-150"
-            >
-              Go to Inbox
-            </Link>
-            <button
-              onClick={() => logout()}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-150"
-            >
-              Logout
-            </button>
-          </div>
-        ) : (
-          <>
-            <Link
-              to="/login"
-              className="text-primary font-semibold hover:underline"
-            >
-              Login
-            </Link>
-            <Link
-              to="/signup"
-              className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary duration-150 transition-colors"
-            >
-              Sign Up
-            </Link>
-          </>
-        )}
+      <div className="flex flex-1 justify-end gap-8">
+        <div className="flex gap-2">
+          {user ? (
+            <>
+              <Link
+                to="/inbox"
+                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#359dff] text-[#0f1a24] text-sm font-bold leading-normal tracking-[0.015em]"
+              >
+                <span className="truncate">Go to Inbox</span>
+              </Link>
+              <button
+                onClick={() => logout()}
+                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#20364b] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+              >
+                <span className="truncate">Logout</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#359dff] text-[#0f1a24] text-sm font-bold leading-normal tracking-[0.015em]"
+              >
+                <span className="truncate">Login</span>
+              </Link>
+              <Link
+                to="/signup"
+                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#20364b] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+              >
+                <span className="truncate">Signup</span>
+              </Link>
+            </>
+          )}
+        </div>
       </div>
-    </nav>
+    </header>
   );
 };
 

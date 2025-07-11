@@ -7,13 +7,6 @@ body,
   overflow: hidden;
 }
 
-@theme {
-  --color-primary: #4300ff;
-  --color-secondary: #0065f8;
-  --color-accent-1: #00caff;
-  --color-accent-2: #00ffde;
-}
-
 @keyframes fade-in-up {
   0% {
     opacity: 0;

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAppDispatch } from "../redux/store";
 import { clearUser, setUser, setUserLoading } from "../redux/slice/userSlice";
-import { setEmails } from "../redux/slice/emailSlice";
+import { resetEmails } from "../redux/slice/emailSlice";
 
 const AUTH_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/auth`;
 
@@ -23,7 +23,9 @@ export function useAuth() {
         dispatch(setUser(res.data.user));
         localStorage.setItem("token", res.data?.token);
         toast.success(res?.data?.message || "signuped successfully");
-        navigate("/inbox");
+        navigate("/inbox", {
+          replace: true,
+        });
       }
     } catch (error: any) {
       const msg = error?.response?.data?.message || "Registration Failed";
@@ -43,7 +45,9 @@ export function useAuth() {
       if (res.data.success) {
         dispatch(setUser(res.data.user));
         localStorage.setItem("token", res.data.token);
-        navigate("/inbox");
+        navigate("/inbox", {
+          replace: true,
+        });
         toast.success(res.data.message || "Logged In successfully");
       }
     } catch (err: any) {
@@ -55,7 +59,7 @@ export function useAuth() {
 
   const logout = () => {
     dispatch(clearUser());
-    dispatch(setEmails([]));
+    dispatch(resetEmails());
     localStorage.removeItem("token");
     navigate("/login");
     toast.success("Logged out successfully");

@@ -1,23 +1,30 @@
 import type { IEmailAccount } from "../redux/slice/emailSlice";
 
-const Account = ({ data, type }: { data: IEmailAccount, type: "google" | "microsoft" }) => {
+const Account = ({
+  data,
+  selected,
+  setSelectedAccount,
+}: {
+  data: IEmailAccount;
+  selected: boolean;
+  setSelectedAccount: React.Dispatch<React.SetStateAction<string>>;
+}) => {
   return (
     <div
-      key={data.email}
-      className={`flex items-center justify-between p-3 rounded-lg border ${
-        data.connected ? "bg-green-100" : "bg-red-100"
-      } shadow-sm`}
+      onClick={() => setSelectedAccount(data?.email)}
+      className={`flex cursor-pointer items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#20364b] ${
+        selected && "bg-[#20364b]"
+      }`}
     >
-      <div className="text-sm font-medium">
-        {type.toUpperCase()}
-        <br />
-        <span className="bg-gray-200">{data.email}</span>
-      </div>
-      {!data.connected && (
-        <button className="text-xs px-2 py-1 border rounded hover:bg-gray-200">
-          Connect
-        </button>
-      )}
+      <div
+        className={`${
+          data?.connected ? "bg-green-500" : "bg-red-500"
+        } w-2 h-2 rounded-full`}
+      ></div>
+
+      <p className="text-white text-sm font-medium leading-normal truncate">
+        {data?.email}
+      </p>
     </div>
   );
 };

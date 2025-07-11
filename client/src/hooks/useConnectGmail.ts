@@ -4,12 +4,13 @@ const GMAIL_API_URL = `${import.meta.env.VITE_API_URL}/api/v1/gmail`;
 
 export function useConnectGmail() {
   const token = localStorage.getItem("token");
-  if (!token) {
-    toast("Connecting failed, login again to resolve issue");
-    return;
-  }
+
   const connectGmail = () => {
-    if (!token) return;
+    if (!token) {
+      toast("Connecting failed, login again to resolve issue");
+      return;
+    }
+
     const url = `${GMAIL_API_URL}/connect?token=${token}`;
     window.open(url);
   };
