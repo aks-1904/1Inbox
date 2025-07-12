@@ -52,9 +52,20 @@ const emailSlice = createSlice({
       }>
     ) {
       const { provider, account, emails, nextPageToken } = action.payload;
+
+      const existingData = state.emails[provider][account];
+
+      const mergedEmails = existingData
+        ? [...existingData.emails, ...emails]
+        : [...emails];
+
+      const uniqueEmails = Array.from(
+        new Map(mergedEmails.map((email) => [email.id, email])).values()
+      );
+
       state.emails[provider][account] = {
-        emails,
-        nextPageToken,
+        emails: uniqueEmails,
+        ...(nextPageToken ? { nextPageToken } : {}),
       };
     },
 

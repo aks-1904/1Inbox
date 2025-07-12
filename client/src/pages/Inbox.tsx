@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useAppSelector } from "../redux/store";
 import { useConnectGmail } from "../hooks/useConnectGmail";
 import { useUser } from "../hooks/useUser";
-import type { Email } from "../redux/slice/emailSlice";
-import Mail from "../components/Mail";
 import Account from "../components/Account";
+import EmailList from "../components/EmailList";
 
 const Inbox = () => {
   const connectGmail = useConnectGmail();
@@ -13,116 +12,23 @@ const Inbox = () => {
   useEffect(() => {
     getProfileData();
   }, []);
+  const [selectedAccount, setSelectedAccount] = useState("");
 
   const user = useAppSelector((store) => store.user.user);
+
   const googleAccounts = useAppSelector((store) => store.user.user?.google);
   const microsoftAccounts = useAppSelector(
     (store) => store.user.user?.microsoft
   );
 
-  const [selectedAccount, setSelectedAccount] = useState("");
-
-  const emails: Email[] = [
-    {
-      id: "1",
-      date: 1752269851,
-      subject: "Meeting on 11:30AM",
-      from: "akshaysharma.19042007@gmail.com",
-      to: "asharma.19042007@outlook.com",
-      snippet:
-        "Hey Akshay, just a reminder that our meeting with the product team is scheduled for 11:30 AM. Please bring the updated project roadmap and any notes from your recent research. Looking forward to a productive discussion.",
-    },
-    {
-      id: "2",
-      date: 1752269852,
-      subject: "Invoice #42319 Attached",
-      from: "billing@freelancermarket.com",
-      to: "akshaysharma.19042007@hello.com",
-      snippet:
-        "Dear Akshay, your invoice for the recent freelance project has been generated. Please find the PDF attachment with all the billing details, including hourly breakdowns and tax calculations. Let us know if you have any questions.",
-    },
-    {
-      id: "3",
-      date: 1752269853,
-      subject: "Welcome to DevForum!",
-      from: "no-reply@devforum.org",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Hi Akshay, welcome to the Developer Forum! We're excited to have you onboard. Join the latest discussions, post questions, and connect with fellow developers around the globe. Your profile has been successfully set up.",
-    },
-    {
-      id: "4",
-      date: 1752269854,
-      subject: "Your Monthly Report is Ready",
-      from: "reports@analyticsdash.com",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Hello Akshay, your monthly analytics report for July is now available. It includes detailed graphs on user engagement, top-performing content, and overall traffic sources. You can download it from your dashboard.",
-    },
-    {
-      id: "5",
-      date: 1752269855,
-      subject: "Important: Password Change Required",
-      from: "security@securemail.com",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Dear user, we have detected a login attempt from an unrecognized device. As a precaution, we require you to change your account password immediately. Click the link below to securely reset your password.",
-    },
-    {
-      id: "6",
-      date: 1752269856,
-      subject: "Upcoming Hackathon – Register Now!",
-      from: "events@codestorm.tech",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Get ready for the biggest coding challenge of the year! CodeStorm Hackathon is back with exciting prizes, top mentors, and networking opportunities. Reserve your spot now before registrations close!",
-    },
-    {
-      id: "7",
-      date: 1752269857,
-      subject: "Flight Booking Confirmation",
-      from: "support@flysmart.in",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Hi Akshay, your booking for flight AI-202 to New Delhi has been confirmed. Please find your e-ticket attached along with baggage allowance details and COVID-19 travel advisories. Safe travels!",
-    },
-    {
-      id: "8",
-      date: 1752269858,
-      subject: "Your Resume Has Been Viewed",
-      from: "notifications@jobhunt.com",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Good news! Your resume was recently viewed by a recruiter from TechnoSoft Inc. If you're interested, log in to your dashboard to check the job details and respond to the opportunity.",
-    },
-    {
-      id: "9",
-      date: 1752269859,
-      subject: "New Comment on Your Blog Post",
-      from: "updates@medium.com",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Hi Akshay, someone just commented on your blog post: '10 Tips to Master React in 2025'. They said: 'Great tips! I especially liked the section about performance optimization.' Click here to view the comment.",
-    },
-    {
-      id: "10",
-      date: 1752269860,
-      subject: "Subscription Expiry Notice",
-      from: "support@cloudtools.app",
-      to: "akshaysharma.19042007@gmail.com",
-      snippet:
-        "Your Pro subscription to CloudTools is expiring in 3 days. Renew now to continue enjoying unlimited storage, premium support, and advanced automation features. Click below to renew your plan.",
-    },
-  ];
-
   return (
     <div
-      className="relative flex size-full min-h-screen flex-col bg-[#0f1a24] dark group/design-root overflow-x-hidden"
+      className="relative flex size-full min-h-screen flex-col bg-[#0f1a24] dark group/design-root overflow-x-hidden max-h-screen"
       style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
     >
       <div className="layout-container flex h-full grow flex-col">
         <div className="gap-1 px-6 flex flex-1 justify-center py-5">
-          <div className="layout-content-container flex flex-col w-80">
+          <div className="layout-content-container flex flex-col w-80 h-[calc(100vh-3rem)]">
             <div className="flex h-full min-h-[700px] flex-col justify-between bg-[#0f1a24] p-4">
               <div className="flex flex-col gap-4">
                 <div className="flex gap-3">
@@ -272,25 +178,9 @@ const Inbox = () => {
             <div className="pb-3">
               <div className="flex border-b border-[#2e4e6b] px-4 gap-8"></div>
             </div>
-            {emails.map((data) => {
-              const domain = data?.to.split("@")[1];
-              const provider =
-                domain === "gmail.com"
-                  ? "Gmail"
-                  : domain === "outlook.com"
-                  ? "Outlook"
-                  : "Other";
-
-              const today = new Date();
-              const emailDate = new Date(data.date * 1000); // Convert seconds to milliseconds
-
-              const timeDiff = today.getTime() - emailDate.getTime();
-              const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-
-              return (
-                <Mail dayDiff={dayDiff} email={data} provider={provider} />
-              );
-            })}
+            <div className="overflow-y-auto min-h-screen">
+              <EmailList selectedAccount={selectedAccount} />
+            </div>
           </div>
         </div>
       </div>
