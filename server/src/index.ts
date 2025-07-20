@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import gmailRoutes from "./routes/gmail.route.js";
+import outlookRoutes from "./routes/outlook.routes.js";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/gmail", gmailRoutes);
+app.use("/api/v1/outlook", outlookRoutes);
 
 // Routes
 app.get("/", (_, res) => {
