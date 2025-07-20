@@ -37,8 +37,7 @@ export const connectGoogle = async (
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: scopes,
-    prompt: "consent",
-    state: token, // your signed JWT from frontend
+    state: token,
   });
 
   return res.redirect(url);
@@ -120,27 +119,28 @@ export const getEmailsOfSingleAccount = async (
   const { pageToken, email } = req.query;
 
   if (!email) {
-    return res.status(404).json({
+    return res.status(400).json({
       success: false,
-      message: "Please specify mail",
+      message: "Please specify an email",
     });
   }
 
   const user = await User.findById(userId);
   const account = user?.google?.find((data) => data.email === email);
 
-  if (!account)
+  if (!account || !account.connected) {
     return res.status(404).json({
       success: false,
-      message: "Email not found",
+      message: "Email not found or not connected.",
     });
+  }
 
   const maxResult = 10;
 
   try {
     const { emails, nextPageToken } = await getEmails(
-      account?.accessToken,
-      account?.refreshToken,
+      account.accessToken,
+      account.refreshToken,
       maxResult,
       user!,
       email as string,
@@ -152,11 +152,27 @@ export const getEmailsOfSingleAccount = async (
       emails,
       nextPageToken,
     });
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    if (error.response?.data?.error === "invalid_grant") {
+      console.log(
+        `Invalid grant for user ${email}. Marking for re-authentication.`
+      );
+
+      account.connected = false;
+      await user?.save();
+
+      return res.status(401).json({
+        success: false,
+        message:
+          "Token has expired or been revoked. Please reconnect your account.",
+        reconnectRequired: true,
+      });
+    }
+
+    console.log("Error fetching emails:", error);
     return res.status(500).json({
       success: false,
-      message: "Cannot get emails",
+      message: "Cannot get emails at this time.",
     });
   }
 };
