@@ -4,15 +4,18 @@ import { useConnectGmail } from "../hooks/useConnectGmail";
 import { useUser } from "../hooks/useUser";
 import Account from "../components/Account";
 import EmailList from "../components/EmailList";
+import { useConnectOutlook } from "../hooks/useConnectOutlook";
 
 const Inbox = () => {
   const connectGmail = useConnectGmail();
+  const connectOutlook = useConnectOutlook();
 
   const { getProfileData } = useUser();
   useEffect(() => {
     getProfileData();
   }, []);
   const [selectedAccount, setSelectedAccount] = useState("");
+  const [provider, setProvider] = useState<"google" | "microsoft" | "">("");
 
   const user = useAppSelector((store) => store.user.user);
 
@@ -100,12 +103,14 @@ const Inbox = () => {
                         {googleAccounts?.map((data, idx) => {
                           const selected = selectedAccount === data?.email;
                           return (
-                            <Account
-                              setSelectedAccount={setSelectedAccount}
-                              key={idx}
-                              data={data}
-                              selected={selected}
-                            />
+                            <div key={idx} onClick={() => setProvider("google")}>
+                              <Account
+                                setSelectedAccount={setSelectedAccount}
+                                key={idx}
+                                data={data}
+                                selected={selected}
+                              />
+                            </div>
                           );
                         })}
                       </>
@@ -131,12 +136,14 @@ const Inbox = () => {
                         {microsoftAccounts?.map((data, idx) => {
                           const selected = data?.email === selectedAccount;
                           return (
-                            <Account
-                              setSelectedAccount={setSelectedAccount}
-                              selected={selected}
-                              key={idx}
-                              data={data}
-                            />
+                            <div key={idx} onClick={() => setProvider("microsoft")}>
+                              <Account
+                                setSelectedAccount={setSelectedAccount}
+                                selected={selected}
+                                key={idx}
+                                data={data}
+                              />
+                            </div>
                           );
                         })}
                       </>
@@ -163,7 +170,10 @@ const Inbox = () => {
                 >
                   <span className="truncate">Connect Gmail</span>
                 </button>
-                <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#359dff] text-[#0f1a24] text-sm font-bold leading-normal tracking-[0.015em]">
+                <button
+                  onClick={() => connectOutlook()}
+                  className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#359dff] text-[#0f1a24] text-sm font-bold leading-normal tracking-[0.015em]"
+                >
                   <span className="truncate">Connect Outlook</span>
                 </button>
               </div>
@@ -179,7 +189,10 @@ const Inbox = () => {
               <div className="flex border-b border-[#2e4e6b] px-4 gap-8"></div>
             </div>
             <div className="overflow-y-auto min-h-screen">
-              <EmailList selectedAccount={selectedAccount} />
+              <EmailList
+                selectedAccount={selectedAccount}
+                provider={provider}
+              />
             </div>
           </div>
         </div>
