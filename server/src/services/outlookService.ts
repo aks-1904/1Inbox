@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IUser } from "../models/user.model";
+import { IUser } from "../models/user.model"; // Adjust the path as needed
 
 // Helper function to get a new access token using the refresh token
 const getNewAccessToken = async (
@@ -37,7 +37,7 @@ export async function getOutlookEmails(
   maxResults = 10,
   user: IUser,
   email: string,
-  skipToken?: string
+  nextPageCursor?: string
 ): Promise<{
   emails: {
     id: string;
@@ -46,23 +46,20 @@ export async function getOutlookEmails(
     snippet: string;
     date: number;
   }[];
-  nextPageToken?: string;
+  nextPageCursor?: string | null;
 }> {
   let currentAccessToken = accessToken;
-  const graphApiEndpoint = `https://graph.microsoft.com/v1.0/me/messages`;
+  let requestUrl = nextPageCursor;
 
-  // Construct the query URL
-  const queryParams = new URLSearchParams({
-    $top: maxResults.toString(),
-    $select: "id,subject,from,bodyPreview,receivedDateTime",
-    $orderby: "receivedDateTime desc",
-  });
-
-  if (skipToken) {
-    queryParams.append("$skiptoken", skipToken);
+  if (!requestUrl) {
+    const baseUrl = `https://graph.microsoft.com/v1.0/me/messages`;
+    const queryParams = new URLSearchParams({
+      $top: maxResults.toString(),
+      $select: "id,subject,from,bodyPreview,receivedDateTime",
+      $orderby: "receivedDateTime desc",
+    });
+    requestUrl = `${baseUrl}?${queryParams.toString()}`;
   }
-
-  const requestUrl = `${graphApiEndpoint}?${queryParams.toString()}`;
 
   try {
     const response = await axios.get(requestUrl, {
@@ -72,12 +69,7 @@ export async function getOutlookEmails(
     });
 
     const messages = response.data.value ?? [];
-    const nextLink = response.data["@odata.nextLink"];
-
-    // Extract the next page token ($skiptoken) from the nextLink URL
-    const nextPageToken = nextLink
-      ? new URL(nextLink).searchParams.get("$skiptoken") ?? undefined
-      : undefined;
+    const nextLink = response.data["@odata.nextLink"] ?? null;
 
     const emailData = messages.map((msg: any) => ({
       id: msg.id,
@@ -87,46 +79,41 @@ export async function getOutlookEmails(
       date: new Date(msg.receivedDateTime).getTime(),
     }));
 
-    return { emails: emailData, nextPageToken };
+    return {
+      emails: emailData,
+      nextPageCursor: nextLink, // pass full URL directly
+    };
   } catch (error: any) {
-    // If the access token is expired (401), try to refresh it
     if (error.response?.status === 401) {
-      console.log("Access token expired for Outlook. Refreshing...");
-
+      console.warn("🔒 Token expired, refreshing...");
       try {
         const { accessToken: newAccessToken, newRefreshToken } =
           await getNewAccessToken(refreshToken);
 
-        // Update user in the database with the new tokens
         const account = user.microsoft?.find((acc) => acc.email === email);
         if (account) {
           account.accessToken = newAccessToken;
-          // Microsoft may return a new refresh token, which should be stored.
           if (newRefreshToken && newRefreshToken !== account.refreshToken) {
             account.refreshToken = newRefreshToken;
           }
           await user.save();
         }
 
-        // Retry the request with the new token
-        return getOutlookEmails(
+        return await getOutlookEmails(
           newAccessToken,
           newRefreshToken || refreshToken,
           maxResults,
           user,
           email,
-          skipToken
+          nextPageCursor // reattempt with same page
         );
       } catch (refreshError) {
-        console.error("Failed to refresh token and get emails:", refreshError);
+        console.error("Refresh failed:", refreshError);
         throw new Error("Could not refresh token.");
       }
     }
 
-    console.error(
-      "Error fetching Outlook emails:",
-      error.response?.data || error.message
-    );
+    console.error("Graph API error:", error.response?.data || error.message);
     throw error;
   }
 }

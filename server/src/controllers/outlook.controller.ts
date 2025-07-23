@@ -132,10 +132,15 @@ export const getEmailsOfSingleAccount = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  const userId = req.id; // Assuming req.id is populated by your auth middleware
-  const { skipToken, email } = req.query;
+  const userId = req.id; // From your auth middleware
+  const { nextPageCursor, email } = req.query;
+
+  const decodednextPageCursor = nextPageCursor
+    ? decodeURIComponent(nextPageCursor as string)
+    : undefined;
 
   if (!email) {
+    console.warn("⚠️ No email provided in query");
     return res.status(400).json({
       success: false,
       message: "Please specify an email address",
@@ -144,6 +149,7 @@ export const getEmailsOfSingleAccount = async (
 
   try {
     const user = await User.findById(userId);
+
     const account = user?.microsoft?.find((data) => data.email === email);
 
     if (!account || !account.connected) {
@@ -154,22 +160,23 @@ export const getEmailsOfSingleAccount = async (
     }
 
     const maxResult = 10;
-    const { emails, nextPageToken } = await getOutlookEmails(
+
+    const { emails, nextPageCursor } = await getOutlookEmails(
       account.accessToken,
       account.refreshToken,
       maxResult,
       user!,
       email as string,
-      skipToken as string | undefined
+      decodednextPageCursor as string | undefined
     );
 
     return res.status(200).json({
       success: true,
       emails,
-      nextPageToken,
+      nextPageCursor,
     });
   } catch (error) {
-    console.error("Controller error getting Outlook emails:", error);
+    console.error("🔥 Error in getEmailsOfSingleAccount:", error);
     return res.status(500).json({
       success: false,
       message: "Cannot get emails at this time.",
