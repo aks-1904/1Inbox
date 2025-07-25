@@ -94,7 +94,7 @@ const EmailList = ({ selectedAccount, provider }: EmailListProps) => {
 
         return (
           <div key={`${email?.id}-${idx}`} ref={isLast ? lastEmailRef : null}>
-            <Mail email={email} dayDiff={dayDiff} provider={providerName} />
+            <Mail account={selectedAccount} email={email} dayDiff={dayDiff} provider={providerName} />
           </div>
         );
       })}

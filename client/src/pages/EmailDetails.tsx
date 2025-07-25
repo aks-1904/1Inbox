@@ -1,23 +1,9 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import type { Email } from "../redux/slice/emailSlice";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 const EmailDetailPage = () => {
-  const { id } = useParams();
-  const [email, setEmail] = useState<Email | null>(null);
-
-  useEffect(() => {
-    const fetchedEmail: Email = {
-      id: id || "1",
-      subject: "Meeting Reminder",
-      snippet: `Hello,\n\nYou have a scheduled meeting with the product team tomorrow at 10:00 AM.\n\nAgenda:\n- Sprint updates\n- Blockers discussion\n- Roadmap planning\n\nRegards,\nProduct Team`,
-      from: "calendar@outlook.com",
-      to: "you@outlook.com",
-      date: 123456789,
-    };
-    setEmail(fetchedEmail);
-  }, [id]);
+  const { state } = useLocation();
+  const { email, provider, account } = state;
 
   if (!email) return <div className="p-6">Loading...</div>;
 
@@ -51,8 +37,13 @@ const EmailDetailPage = () => {
               <div
                 className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-fit"
                 style={{
-                  backgroundImage:
-                    'url("./avatar.png")',
+                  backgroundImage: `url(${
+                    provider === "Gmail"
+                      ? "./gmail.png"
+                      : provider === "Outlook"
+                      ? "./outlook.png"
+                      : "./unkown.png"
+                  })`,
                 }}
               ></div>
               <div className="flex flex-col justify-center">
@@ -60,7 +51,7 @@ const EmailDetailPage = () => {
                   From: {email?.from}
                 </p>
                 <p className="text-[#8daece] text-sm font-normal leading-normal line-clamp-2">
-                  To: {email?.to}
+                  To: {account}
                 </p>
               </div>
             </div>

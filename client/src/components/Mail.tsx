@@ -5,14 +5,18 @@ const Mail = ({
   email,
   provider,
   dayDiff,
+  account,
 }: {
   email: Email;
   provider: "Gmail" | "Outlook" | "Other";
   dayDiff: number;
+  account: string;
 }) => {
   const navigate = useNavigate();
   const goToEmail = (id: string) => {
-    navigate(`/inbox/${id}`);
+    navigate(`/inbox/${id}`, {
+      state: { email, provider, account },
+    });
   };
   return (
     <div
