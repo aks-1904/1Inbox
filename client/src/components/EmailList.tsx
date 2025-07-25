@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAppSelector } from "../redux/store";
 import { useGmail } from "../hooks/useGmail";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
@@ -26,52 +26,59 @@ const EmailList = ({ selectedAccount, provider }: EmailListProps) => {
   const emails: Email[] = accountData?.emails || [];
   const nextPageToken = accountData?.nextPageToken || "";
 
-  const fetchStateRef = useRef({
+  // ✅ FIXED: `useCallback` now depends directly on state and props.
+  // This eliminates the race condition caused by using `useRef`.
+  const fetchMoreEmails = useCallback(async () => {
+    if (!selectedAccount || !provider || loading || !hasMore) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      let moreAvailable = false;
+      if (provider === "google") {
+        moreAvailable = await getGmailEmails(selectedAccount, nextPageToken);
+      } else if (provider === "microsoft") {
+        // This relies on your `useOutlook` hook correctly handling the token
+        // (which is an `@odata.nextLink` URL) and returning a boolean.
+        moreAvailable = await getOutlookEmails(selectedAccount, nextPageToken);
+      }
+      setHasMore(moreAvailable);
+    } catch (error) {
+      console.error("Failed to fetch more emails:", error);
+      setHasMore(false); // Stop trying to fetch on error
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    selectedAccount,
+    provider,
     loading,
     hasMore,
     nextPageToken,
-    selectedAccount,
-    provider,
-  });
+    getGmailEmails,
+    getOutlookEmails,
+  ]);
 
+  // ✅ FIXED: Effect logic is now more robust for handling account switches.
   useEffect(() => {
-    fetchStateRef.current = {
-      loading,
-      hasMore,
-      nextPageToken,
-      selectedAccount,
-      provider,
-    };
-  }, [loading, hasMore, nextPageToken, selectedAccount, provider]);
+    if (selectedAccount && provider) {
+      // Check if we have switched to a new account
+      if (selectedAccount !== fetchedAccount) {
+        // Reset state for the new account
+        setHasMore(true);
+        setFetchedAccount(selectedAccount);
 
-  const fetchMoreEmails = useCallback(async () => {
-    const { loading, hasMore, nextPageToken, selectedAccount, provider } =
-      fetchStateRef.current;
-
-    if (!selectedAccount || !provider || loading || !hasMore) return;
-
-    setLoading(true);
-
-    let moreAvailable = false;
-    if (provider === "google") {
-      moreAvailable = await getGmailEmails(selectedAccount, nextPageToken);
-    } else if (provider === "microsoft") {
-      moreAvailable = await getOutlookEmails(selectedAccount, nextPageToken);
-    }
-
-    setHasMore(moreAvailable);
-    setLoading(false);
-  }, [getGmailEmails, getOutlookEmails]);
-
-  useEffect(() => {
-    if (selectedAccount && selectedAccount !== fetchedAccount) {
-      setHasMore(true);
-      if (emails.length === 0) {
-        fetchMoreEmails();
+        // Fetch emails if they don't already exist in the Redux store for this account.
+        if (!accountData || accountData.emails.length === 0) {
+          fetchMoreEmails();
+        }
       }
-      setFetchedAccount(selectedAccount);
+    } else {
+      // Clear the fetched account if no account is selected
+      setFetchedAccount(null);
     }
-  }, [selectedAccount, fetchedAccount, emails.length, fetchMoreEmails]);
+  }, [selectedAccount, provider, fetchedAccount, accountData, fetchMoreEmails]);
 
   const lastEmailRef = useInfiniteScroll(fetchMoreEmails, loading, hasMore);
 
@@ -99,6 +106,15 @@ const EmailList = ({ selectedAccount, provider }: EmailListProps) => {
           </span>
         </div>
       )}
+
+      {/* ✅ ADDED: Message to show when all emails have been loaded */}
+      {!loading && !hasMore && emails.length > 0 && (
+        <div className="text-center text-gray-400 mt-4 mb-4">
+          No more emails found.
+        </div>
+      )}
+
+      {/* Existing messages */}
       {!loading && emails.length === 0 && selectedAccount && (
         <div className="text-center text-gray-400 mt-10">
           No emails found for this account.
