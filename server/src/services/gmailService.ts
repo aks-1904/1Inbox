@@ -107,3 +107,30 @@ export async function getEmails(
 
   return { emails: emailData, nextPageToken };
 }
+
+export const getMessageBody = (payload: any): string | null => {
+  if (!payload) return null;
+
+  // Case: text/plain or text/html directly in payload
+  if (payload.body && payload.body.data) {
+    return Buffer.from(payload.body.data, "base64").toString("utf-8");
+  }
+
+  // Case: multipart - search recursively for text/html
+  if (payload.parts) {
+    for (const part of payload.parts) {
+      if (part.mimeType === "text/html" && part.body && part.body.data) {
+        return Buffer.from(part.body.data, "base64").toString("utf-8");
+      }
+    }
+
+    // fallback to text/plain
+    for (const part of payload.parts) {
+      if (part.mimeType === "text/plain" && part.body && part.body.data) {
+        return Buffer.from(part.body.data, "base64").toString("utf-8");
+      }
+    }
+  }
+
+  return null;
+};

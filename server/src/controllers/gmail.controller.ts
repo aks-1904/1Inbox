@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { google } from "googleapis";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
-import { getEmails } from "../services/gmailService";
+import { getEmails, getMessageBody } from "../services/gmailService";
 
 dotenv.config();
 
@@ -173,6 +173,65 @@ export const getEmailsOfSingleAccount = async (
     return res.status(500).json({
       success: false,
       message: "Cannot get emails at this time.",
+    });
+  }
+};
+
+export const getFullGmailMessage = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  const { email, messageId } = req.query;
+
+  const userId = req.id;
+  const user = await User.findById(userId);
+
+  const accessToken = user?.google?.find(
+    (data) => data.email === email
+  )?.accessToken;
+
+  if (!accessToken || !messageId) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing accessToken or messageId in query",
+    });
+  }
+
+  try {
+    oauth2Client.setCredentials({ access_token: accessToken as string });
+
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
+    const response = await gmail.users.messages.get({
+      userId: "me",
+      id: messageId as string,
+      format: "full",
+    });
+
+    const payload = response.data.payload;
+    const headers = response.data.payload?.headers;
+    const subjectHeader = headers?.find((h) => h.name === "Subject");
+    const subject = subjectHeader?.value || "No Subject";
+
+    const bodyContent = getMessageBody(payload);
+
+    if (!bodyContent) {
+      return res.status(404).json({
+        success: false,
+        message: "Email body not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      subject,
+      body: bodyContent,
+    });
+  } catch (err) {
+    console.error("Error fetching Gmail message:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch full message",
     });
   }
 };
