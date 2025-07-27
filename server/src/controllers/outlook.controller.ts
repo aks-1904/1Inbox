@@ -183,3 +183,55 @@ export const getEmailsOfSingleAccount = async (
     });
   }
 };
+
+export const getOutlookEmailBody = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  const { email, messageId } = req.query;
+
+  const userId = req.id;
+  const user = await User.findById(userId);
+
+  const accessToken = user?.microsoft!.find(
+    (data) => data.email === email
+  )?.accessToken;
+
+  if (!accessToken || !messageId) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing accessToken or messageId in query",
+    });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://graph.microsoft.com/v1.0/me/messages/${messageId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const message = response.data;
+    const subject = message.subject || "No Subject";
+    const bodyContent = message.body?.content || "";
+
+    return res.status(200).json({
+      success: true,
+      subject,
+      body: bodyContent,
+      contentType: message.body?.contentType, // 'html' or 'text'
+    });
+  } catch (error: any) {
+    console.error(
+      "Error fetching Outlook message:",
+      error.response?.data || error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch Outlook message body",
+    });
+  }
+};
