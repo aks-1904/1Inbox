@@ -13,6 +13,7 @@ export interface Email {
   from: string;
   to: string;
   date: number;
+  body: string | null;
 }
 
 type Provider = "google" | "microsoft";
@@ -47,7 +48,7 @@ const emailSlice = createSlice({
       action: PayloadAction<{
         provider: Provider;
         account: string;
-        emails: Email[];
+        emails: Omit<Email, "body">[];
         nextPageToken?: string;
       }>
     ) {
@@ -56,8 +57,8 @@ const emailSlice = createSlice({
       const existingData = state.emails[provider][account];
 
       const mergedEmails = existingData
-        ? [...existingData.emails, ...emails]
-        : [...emails];
+        ? [...existingData.emails, ...emails.map((e) => ({ ...e, body: null }))]
+        : [...emails.map((e) => ({ ...e, body: null }))];
 
       const uniqueEmails = Array.from(
         new Map(mergedEmails.map((email) => [email.id, email])).values()
@@ -74,7 +75,7 @@ const emailSlice = createSlice({
       action: PayloadAction<{
         provider: Provider;
         account: string;
-        email: Email;
+        email: Omit<Email, "body">;
       }>
     ) {
       const { provider, account, email } = action.payload;
@@ -85,7 +86,30 @@ const emailSlice = createSlice({
         };
       }
 
-      state.emails[provider][account].emails.push(email);
+      state.emails[provider][account].emails.push({
+        ...email,
+        body: null,
+      });
+    },
+
+    setEmailBody(
+      state,
+      action: PayloadAction<{
+        provider: Provider;
+        account: string;
+        emailId: string;
+        body: string;
+      }>
+    ) {
+      const { provider, account, emailId, body } = action.payload;
+
+      const emailData = state.emails[provider][account];
+      if (emailData) {
+        const email = emailData.emails.find((e) => e.id === emailId);
+        if (email) {
+          email.body = body;
+        }
+      }
     },
 
     setNextPageToken(
@@ -120,6 +144,7 @@ const emailSlice = createSlice({
 export const {
   setEmails,
   addEmail,
+  setEmailBody,
   setNextPageToken,
   setLoading,
   resetEmails,

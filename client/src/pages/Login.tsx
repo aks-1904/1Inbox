@@ -30,7 +30,6 @@ const Login = () => {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                console.log("hello")
                 await login(email, password);
               }}
             >

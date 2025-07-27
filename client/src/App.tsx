@@ -11,15 +11,20 @@ const App = () => {
   return (
     <div>
       <Toaster />
-      <ScrollProvider>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/inbox" element={<Inbox />} />
-          <Route path="/inbox/:id" element={<EmailDetailPage />} />
-        </Routes>
-      </ScrollProvider>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ScrollProvider>
+              <Home />
+            </ScrollProvider>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/inbox" element={<Inbox />} />
+        <Route path="/inbox/:id" element={<EmailDetailPage />} />
+      </Routes>
     </div>
   );
 };

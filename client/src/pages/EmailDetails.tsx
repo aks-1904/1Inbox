@@ -1,15 +1,41 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useGmail } from "../hooks/useGmail";
+import { useEffect } from "react";
+import DOMPurify from "dompurify";
+import { useAppSelector } from "../redux/store";
 
 const EmailDetailPage = () => {
   const { state } = useLocation();
-  const { email, provider, account } = state;
+  const { provider, account } = state;
+  const navigate = useNavigate();
 
-  if (!email) return <div className="p-6">Loading...</div>;
+  const { id } = useParams();
+
+  const { getEmailBody } = useGmail();
+  const email = useAppSelector((store) =>
+    store.emails.emails.google[account].emails.find((e) => e.id === id)
+  );
+
+  if (!id) {
+    navigate("/inbox");
+  }
+
+  useEffect(() => {
+    if (!email) {
+      navigate("/inbox", {
+        replace: true,
+      });
+    }
+
+    if (!email?.body && email?.id) {
+      getEmailBody(account, email?.id);
+    }
+  }, [email?.body]);
 
   return (
     <div
-      className="relative flex size-full min-h-screen flex-col bg-[#0f1a24] dark group/design-root overflow-x-hidden"
+      className="relative flex flex-col min-h-screen h-screen overflow-y-auto bg-[#0f1a24]"
       style={{ fontFamily: 'Inter, "Noto Sans", sans-serif' }}
     >
       <div className="layout-container flex h-full grow flex-col">
@@ -56,11 +82,16 @@ const EmailDetailPage = () => {
               </div>
             </div>
             <p className="text-[#8daece] text-sm font-normal leading-normal pb-3 pt-1 px-4">
-              {new Date(email?.date * 1000).toString()}
+              {email?.date && new Date(email?.date * 1000).toString()}
             </p>
-            <p className="text-white text-base font-normal leading-normal pb-3 pt-1 px-4">
-              {email?.snippet}
-            </p>
+            {email?.body && (
+              <div
+                className="text-white email-body text-base font-normal leading-normal pb-3 pt-1 px-4 w-full"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(email.body),
+                }}
+              ></div>
+            )}
           </div>
         </div>
       </div>
