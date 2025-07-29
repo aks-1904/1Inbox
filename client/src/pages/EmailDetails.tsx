@@ -4,17 +4,22 @@ import { useGmail } from "../hooks/useGmail";
 import { useEffect } from "react";
 import DOMPurify from "dompurify";
 import { useAppSelector } from "../redux/store";
+import { useOutlook } from "../hooks/useOutlook";
 
 const EmailDetailPage = () => {
   const { state } = useLocation();
   const { provider, account } = state;
   const navigate = useNavigate();
+  console.log(provider);
 
   const { id } = useParams();
 
-  const { getEmailBody } = useGmail();
+  const { getEmailBody: getEmailBodyGoogle } = useGmail();
+  const { getEmailBody: getEmailBodyMicrosoft } = useOutlook();
   const email = useAppSelector((store) =>
-    store.emails.emails.google[account].emails.find((e) => e.id === id)
+    provider === "Gmail"
+      ? store.emails.emails.google[account].emails.find((e) => e.id === id)
+      : store.emails.emails.microsoft[account].emails.find((e) => e.id === id)
   );
 
   if (!id) {
@@ -26,10 +31,16 @@ const EmailDetailPage = () => {
       navigate("/inbox", {
         replace: true,
       });
+      return;
     }
 
-    if (!email?.body && email?.id) {
-      getEmailBody(account, email?.id);
+    if (!email.body && email.id) {
+      if (provider === "Gmail") {
+        getEmailBodyGoogle(account, email.id);
+      }
+      if (provider === "Outlook") {
+        getEmailBodyMicrosoft(account, email.id);
+      }
     }
   }, [email?.body]);
 
